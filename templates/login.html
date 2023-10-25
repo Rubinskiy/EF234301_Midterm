@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Sign in to your account</title>
+
+        <!-- Bootstrap core CSS -->
+        <link href="../static/css/bootstrap.min.css" rel="stylesheet" />
+
+        <style>
+            .bd-placeholder-img {
+                font-size: 1.125rem;
+                text-anchor: middle;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+            }
+
+            @media (min-width: 768px) {
+                .bd-placeholder-img-lg {
+                    font-size: 3.5rem;
+                }
+            }
+
+            .topnav {
+                position: absolute;
+                top: 8px;
+                right: 16px;
+            }
+        </style>
+
+        <!-- Custom styles for this template -->
+        <link href="../static/css/signin.css" rel="stylesheet" />
+    </head>
+    <body class="text-center">
+        {% if is_login %}
+        <div class="topnav">
+            <a href="/logout">Logout</a>
+        </div>
+        {% endif %} {% if is_login %}
+        <main class="form-signin">
+            <img
+                class="mb-4"
+                src="../static/images/wsmj.png"
+                alt=""
+                width="174"
+                height="163"
+            />
+            <p>Already logged in as {{session["username"]}}</p>
+            <p class="mt-5 mb-3 text-muted">&copy; 2023 WSMJ.</p>
+        </main>
+        {% else %}
+        <main class="form-signin">
+            <img
+                class="mb-4"
+                src="../static/images/wsmj.png"
+                alt=""
+                width="174"
+                height="163"
+            />
+
+            <div class="form-floating">
+                <input
+                    type="text"
+                    class="form-control"
+                    id="floatingInput"
+                    name="username"
+                    placeholder="Username"
+                    minlength="3"
+                    maxlength="16"
+                />
+                <label for="floatingInput">Username</label>
+            </div>
+            <div class="form-floating">
+                <input
+                    type="password"
+                    class="form-control"
+                    id="floatingPassword"
+                    name="password"
+                    placeholder="Password"
+                    minlength="3"
+                    maxlength="100"
+                />
+                <label for="floatingPassword">Password</label>
+            </div>
+
+            <button class="w-100 btn btn-lg btn-primary" id="submit">
+                Sign in
+            </button>
+            <div style="padding-top: 15px"></div>
+            <a
+                href="/register"
+                class="w-100 btn btn-lg btn-outline-primary"
+                type="submit"
+            >
+                Create account
+            </a>
+            <p class="mt-5 mb-3 text-muted">&copy; 2023 WSMJ.</p>
+        </main>
+        {% endif %}
+        <script>
+            const submit = document.getElementById("submit");
+            submit.addEventListener("click", () => {
+                // Disable submit button
+                submit.disabled = true;
+
+                const username = document.querySelector(
+                    "input[name=username]"
+                ).value;
+                const password = document.querySelector(
+                    "input[name=password]"
+                ).value;
+
+                if (!username || !password) {
+                    alert("Please fill in all fields.");
+                    submit.disabled = false;
+                    return;
+                }
+
+                // Check if username > 16 characters or < 3 characters
+                if (username.length > 16 || username.length < 3) {
+                    alert("Username must be less than 16 characters.");
+                    submit.disabled = false;
+                    return;
+                }
+
+                // Check if fields match regex
+                if (
+                    !username.match(
+                        /^(?=[a-zA-Z0-9._]{3,16}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+                    )
+                ) {
+                    alert("Username cannot contain special characters.");
+                    submit.disabled = false;
+                    return;
+                }
+
+                fetch("/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((res) => {
+                        if (res.status == "success") {
+                            window.location.href = "/";
+                        } else if (res.status == "failed") {
+                            alert(res.message);
+                        } else {
+                            alert("Something went wrong.");
+                        }
+                    });
+
+                // Enable submit button
+                submit.disabled = false;
+            });
+        </script>
+    </body>
+</html>

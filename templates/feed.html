@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Calistoga&family=Pirata+One&display=swap"
+            rel="stylesheet"
+        />
+        <title>FEED</title>
+        <style>
+            html,
+            body {
+                height: 100%;
+                background-color: #ccc;
+                padding: 12px;
+                font-family: "Calistoga";
+            }
+            .topnav {
+                position: absolute;
+                top: 8px;
+                right: 16px;
+            }
+            .box {
+                background-color: #bfbfbf;
+                border-radius: 8px;
+                padding: 12px;
+                margin: 12px;
+            }
+            .hero-image {
+                background-image: linear-gradient(
+                        rgba(0, 0, 0, 0.5),
+                        rgba(0, 0, 0, 0.5)
+                    ),
+                    url("../static/images/ships.jpeg");
+                height: 50%;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: cover;
+                position: relative;
+            }
+
+            .hero-text {
+                text-align: center;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: white;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="topnav">
+            {% if is_login %}
+            <a href="/create">Create a post</a>
+            /
+            <a href="/logout">Logout</a>
+            {% else %}
+            <a href="/">Login</a>
+            {% endif %}
+        </div>
+
+        <div class="hero-image">
+            <div class="hero-text">
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/VOC.svg/1222px-VOC.svg.png"
+                    style="width: 152px; height: 127px; filter: invert(100%)"
+                />
+                <h1 style="font-size: 50px">De VOC Blog</h1>
+            </div>
+        </div>
+
+        <div style="text-align: center">
+            <h1>WELCOME TO THE FUCKING FEED, {{session["username"]}}!</h1>
+            <div style="text-align: left">
+                {% if posts|length == 0 %}
+                <div style="text-align: center">
+                    <h1 style="opacity: 0.4">NO FUCKING POSTS</h1>
+                    <a href="/create">Click here to make one you peasant!</a>
+                </div>
+                {% endif %} {% for post in posts %}
+                <div class="box" id="{{post[0]}}">
+                    {% if session["username"] == post[5] %}
+                    <div style="float: right">
+                        <a
+                            href="javascript:;"
+                            id="del-post"
+                            style="color: darkred"
+                            >Delete</a
+                        >
+                    </div>
+                    {% endif %}
+                    <h2>{{post[2]}}</h2>
+                    <p>{{post[3]}}</p>
+                    <p style="font-size: 11px; color: rgb(66, 66, 66)">
+                        Posted by {{post[5]}} {{get_post_time(post[6])}}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <script>
+            const delPost = document.querySelectorAll("#del-post");
+            delPost.forEach((post) => {
+                post.addEventListener("click", () => {
+                    // Show confirmation dialog
+                    const confirm = window.confirm(
+                        "Are you sure you want to delete this fucking post?"
+                    );
+                    if (confirm) {
+                        // Get post id
+                        const id = post.parentElement.parentElement.id;
+                        fetch(`/delete/${id}`)
+                            .then((res) => res.json())
+                            .then((data) => {
+                                if (data["status"] == "success") {
+                                    document.getElementById(id).remove();
+                                } else if (data["status"] == "failed") {
+                                    alert(data["msg"]);
+                                } else {
+                                    alert("Something went wrong");
+                                }
+                            });
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
